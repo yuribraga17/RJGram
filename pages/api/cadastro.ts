@@ -1,12 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { conectarMongoDB } from '../../middlewares/conectarMongoDB';
-import type  {respostaPadraoMsg} from '../../types/respostaPadraoMsg';
-import type  {CadastroRequisicao} from '../../types/CadastroRequisicao';
-import {UsuarioModel} from '../../models/UsuarioModel';
+import type  { respostaPadraoMsg } from '../../types/respostaPadraoMsg';
+import type  { CadastroRequisicao } from '../../types/CadastroRequisicao';
+import { UsuarioModel } from '../../models/UsuarioModel';
 import md5 from 'md5';
 
 const endpointCadastro = 
-    async (req : NextApiRequest, res : NexApiResponse<respostaPadraoMsg>) => {
+    async (req : NextApiRequest, res : NextApiResponse<respostaPadraoMsg>) => {
 
         if(req.method === 'POST'){
             const usuario = req.body as CadastroRequisicao;
@@ -35,12 +35,6 @@ const endpointCadastro =
             const usuariosComMesmoEmail = await UsuarioModel.find({email : usuario.email});
             if(usuariosComMesmoEmail && usuariosComMesmoEmail.length > 0){
                 return res.status(400).json({erro : 'Ops: O email cadastrado em nossa rede social.'});
-            }
-
-            //Validação de usuário com mesmo nome
-            const usuariosComMesmoNome = await UsuarioModel.find({usuario : usuario.nome});
-            if(usuariosComMesmoNome && usuariosComMesmoNome.length > 0){
-                return res.status(400).json({erro : 'Ops: O usuário já existe.'});
             }
 
             await UsuarioModel.create(UsuarioASerSalvo);
