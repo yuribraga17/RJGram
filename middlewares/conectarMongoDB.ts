@@ -2,6 +2,8 @@ import type {NextApiRequest, NextApiResponse, NextApiHandler} from 'next';
 import mongoose from 'mongoose';
 import type {respostaPadraoMsg} from '../types/respostaPadraoMsg';
 
+mongoose.set("strictQuery", true);
+
 export const conectarMongoDB = (handler : NextApiHandler) =>
     async (req: NextApiRequest, res: NextApiResponse<respostaPadraoMsg>) => {
 
