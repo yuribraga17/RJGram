@@ -1,14 +1,16 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
-import { conectarMongoDB } from '../../middlewares/conectarMongoDB';
-import type  { respostaPadraoMsg } from '../../types/respostaPadraoMsg';
-import type  { CadastroRequisicao } from '../../types/CadastroRequisicao';
-import { UsuarioModel } from '../../models/UsuarioModel';
+import type {NextApiRequest, NextApiResponse} from 'next';
+import type { respostaPadraoMsg } from '../../types/respostaPadraoMsg';
+import type { CadastroRequisicao } from '../../types/CadastroRequisicao';
+import {UsuarioModel} from '../../models/UsuarioModel';
+import {conectarMongoDB} from '../../middlewares/conectarMongoDB';
 import md5 from 'md5';
+import {updload, uploadImagemCosmic} from '../../services/uploadImagemCosmic';
+import nc from 'next-connect';
 
-const endpointCadastro = 
-    async (req : NextApiRequest, res : NextApiResponse<respostaPadraoMsg>) => {
-
-        if(req.method === 'POST'){
+const handler = nc()
+    .use(updload.single('file'))
+    .post( async (req : NextApiRequest, res : NextApiResponse<respostaPadraoMsg>) => {
+        try{
             const usuario = req.body as CadastroRequisicao;
         
             if(!usuario.nome || usuario.nome.length < 2){
@@ -24,24 +26,35 @@ const endpointCadastro =
             if(!usuario.senha || usuario.senha.length < 4){
                 return res.status(400).json({erro : 'Senha invalida'});
             }
-            //salvar database
-            const UsuarioASerSalvo = {
+    
+            // validacao se ja existe usuario com o mesmo email
+            const usuariosComMesmoEmail = await UsuarioModel.find({email : usuario.email});
+            if(usuariosComMesmoEmail && usuariosComMesmoEmail.length > 0){
+                return res.status(400).json({erro : 'Ja existe uma conta com o email informado'});
+            }
+
+            // enviar a imagem do multer para o cosmic
+            const image = await uploadImagemCosmic(req);
+    
+            // salvar no banco de dados
+            const usuarioASerSalvo = {
                 nome : usuario.nome,
                 email : usuario.email,
                 senha : md5(usuario.senha),
-
+                avatar : image?.media?.url
             }
-            //Validação de usuário com mesmo email
-            const usuariosComMesmoEmail = await UsuarioModel.find({email : usuario.email});
-            if(usuariosComMesmoEmail && usuariosComMesmoEmail.length > 0){
-                return res.status(400).json({erro : 'Ops: O email cadastrado em nossa rede social.'});
-            }
-
-            await UsuarioModel.create(UsuarioASerSalvo);
-
-            return res.status(200).json({msg : 'Conta criada com sucesso.'});
+            await UsuarioModel.create(usuarioASerSalvo);
+            return res.status(200).json({msg : 'Usuario criado com sucesso'});
+        }catch(e : any){
+            console.log(e);
+            return res.status(400).json({erro : e.toString()});
         }
-        return res.status(405).json({erro : 'Modo de utilização invalido'});
+});
+
+export const config = {
+    api: {
+        bodyParser : false
+    }
 }
 
-export default conectarMongoDB(endpointCadastro);
+export default conectarMongoDB(handler);

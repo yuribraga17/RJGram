@@ -10,16 +10,21 @@
   },
   "dependencies": {
     "@next/font": "13.0.7",
+    "cosmicjs": "^4.3.1",
     "jsonwebtoken": "^9.0.0",
     "md5": "^2.3.0",
+    "moment": "^2.29.4",
     "mongoose": "^6.8.1",
+    "multer": "^1.4.5-lts.1",
     "next": "13.0.7",
+    "next-connect": "^0.13.0",
     "react": "18.2.0",
     "react-dom": "18.2.0"
   },
   "devDependencies": {
     "@types/jsonwebtoken": "^8.5.9",
     "@types/md5": "^2.3.2",
+    "@types/multer": "^1.4.7",
     "@types/node": "18.11.17",
     "@types/react": "18.0.26",
     "@types/react-dom": "18.0.9",
